@@ -12,26 +12,30 @@
   <body>
 
     <div class="wrapper">
-
       <header>
         <h1>Instrument Sound Training</h1>
       </header>
-
-      <section class="top-display">
+  <section class="top-display">
 	<div class="directions">
-    <h4>press record to start</h4>
-    <p>When all the requested sounds are completed you'll be able to upload the recordings.</p>
-    <p>
-      <strong>If you mess up, press stop and you can delete the bad ones and re-record them as needed.</strong>
+      <div>
+          <form action="download">
+          <strong>your name: </strong><input type="text" name="name" id="namebox"> <button type="submit">download your files</button>
+          </form>
+          <div>
+          <small> this is so we can collect all your files and keep them separated from everything else</small>
+        </div>
+      </div>
+      <br>
+    <h3>press record to start</h3>
+    <div>If you mess up, press stop and you can delete the bad ones and re-record them as needed.</div>
     </p>
 	</div>
-	<div class="progress-display">
-  </div>
-  <div>
+
+  <div class="guidance">
     next sound: <span class="next-word-display"></span>
-	</div>
-	<div class="info-display">
-	</div>
+  <h3><div class="info-display"></div></h3>
+  <div class="progress-display"> </div>
+  </div>
       </section>
 
       <section class="main-controls">

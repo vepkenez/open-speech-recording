@@ -321,7 +321,7 @@ function getNextWord() {
 function getProgressDescription() {
   var allWords = unrollWordCounts(getAllWantedWords());
   var remainingWords = unrollWordCounts(getRemainingWords());
-  return ((allWords.length + 1) - remainingWords.length) + "/" + allWords.length;
+  return ((allWords.length) - remainingWords.length) + "/" + allWords.length;
 }
 
 function updateProgress() {
@@ -348,7 +348,6 @@ function doRecord(){
   record.style.background = "red";
   body.classList.add('recording');
   setTimeout(endRecording, 1500);
-
 }
 
 function endRecording() {
@@ -400,10 +399,10 @@ function uploadNextClip() {
   xhr.responseType = 'blob';
   xhr.onload = function(e) {
     if (this.status == 200) {
+      var name = document.querySelector('#namebox').value;
       var blob = this.response;
-      console.log(blob);
       var ajaxRequest = new XMLHttpRequest();
-      var uploadUrl = '/upload?word=' + word + '&_csrf_token=' + csrf_token;
+      var uploadUrl = '/upload?word=' + word + '&name='+ name + '&_csrf_token=' + csrf_token;
       ajaxRequest.open('POST', uploadUrl, true);
       ajaxRequest.setRequestHeader('Content-Type', 'application/json');    
       ajaxRequest.onreadystatechange = function() {
@@ -415,9 +414,9 @@ function uploadNextClip() {
 	    } else {
 	      allDone();
 	    }
-          } else {
-            alert('Uploading failed with error code ' + ajaxRequest.status);
-          }
+    } else {
+      alert('Uploading failed with error code ' + ajaxRequest.status);
+    }
 	}
       };
       ajaxRequest.send(blob);

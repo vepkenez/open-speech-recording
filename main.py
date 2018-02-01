@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_file
 from flask import abort
 from flask import make_response
 from flask import redirect
@@ -7,11 +7,9 @@ from flask import request
 from flask import session
 from werkzeug.utils import secure_filename
 import os
-
-
-import os
+import re
 import uuid
-
+import shutil
 app = Flask(__name__)
 
 @app.route("/")
@@ -29,9 +27,29 @@ def welcome():
     else:
         return make_response(redirect('/start'))
 
-@app.route("/legal")
-def legal():
-    return render_template("legal.html")
+@app.route('/download')
+def download():
+    name = request.args.get('name')
+    if re.search('\W', name):
+        return make_response('evil names not allowed', 401)
+
+    target_path = os.path.join(os.path.dirname('__file__'), 'recordings', name)
+    if not os.path.exists(target_path):
+        return make_response('no recordings for name: %s'%name, 400)
+    
+    zip_path = os.path.join(os.path.dirname('__file__'), 'zips')
+    os.makedirs(zip_path, exist_ok=True)
+
+    zip_file_path = os.path.join(zip_path, name+'.zip')
+    if os.path.exists(zip_file_path):
+        os.remove(zip_file_path)
+
+    zipfile = shutil.make_archive(
+        os.path.join(zip_path, name), 
+        'zip', 
+        target_path
+    )
+    return send_file(zipfile, attachment_filename='%s-trainingdata.zip'%name,  as_attachment=True)
 
 @app.route("/start")
 def start():
@@ -47,14 +65,22 @@ def upload():
     if not session_id:
         make_response('No session', 400)
     word = request.args.get('word')
+    if re.search('\W', word.replace('-', '')):
+        return make_response('evil words not allowed', 401)
+    name = request.args.get('name')
+    if re.search('\W', name):
+        return make_response('evil names not allowed', 401)
+
     audio_data = request.data
     filename = word + '----' + uuid.uuid4().hex + '.wav'
     secure_name = filename
-    # Left in for debugging purposes. If you comment this back in, the data
-    # will be saved to the local file system.
-    with open(os.path.join('recordings', secure_name), 'wb') as f:
+
+    outpath = os.path.join(os.path.dirname('__file__'), 'recordings', name)
+    os.makedirs(outpath, exist_ok=True)
+
+    with open(os.path.join('recordings', name, secure_name), 'wb') as f:
        f.write(audio_data)
-    # Create a Cloud Storage client.
+ 
     response = make_response('All good')
     return response
 
@@ -76,4 +102,4 @@ app.jinja_env.globals['csrf_token'] = generate_csrf_token
 app.secret_key = "bibblebabbleblubberdooodle"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True, port=5000, ssl_context='adhoc')
